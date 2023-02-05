@@ -3,9 +3,7 @@ package com.talaria.portal.endpoints;
 import com.talaria.portal.model.Message;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -21,33 +19,39 @@ public class MessageEndpoints {
     public List<Message> getAllMessagesSentBetween(Timestamp from, Timestamp until) {
         return messages.stream()
                 .filter(message ->
-                        message.sent().after(from) ^
-                        message.sent().before(until))
+                        (from != null && message.sent().after(from)) ^
+                                (until != null && message.sent().before(until)))
                 .toList();
     }
 
-    @GetMapping("/messages/")
-    public ResponseEntity<Message> getMessage(UUID uuid) {
+    @GetMapping("/messages/{uuid}")
+    public ResponseEntity<Message> getMessage(@PathVariable UUID uuid) {
         var maybeMessage = messages.stream()
-                .filter(message -> message.uuid() == uuid)
+                .filter(message -> message.uuid().equals(uuid))
                 .findFirst();
         if (maybeMessage.isPresent())
             return new ResponseEntity<>(maybeMessage.get(), HttpStatus.OK);
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @PostMapping("/messages")
-    public ResponseEntity<?> PostMessage(String receiverMedium,
-                                         String senderMedium,
-                                         String message){
-        messages.add(new Message(receiverMedium, senderMedium, message));
-        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    @DeleteMapping("/messages/{uuid}")
+    public ResponseEntity<Message> deleteMessage(@PathVariable UUID uuid) {
+        var maybeMessage = messages.stream()
+                .filter(message -> message.uuid().equals(uuid))
+                .findFirst();
+        if (maybeMessage.isPresent()) {
+            messages.remove(maybeMessage.get());
+            return new ResponseEntity<>(HttpStatus.ACCEPTED);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+
     @PostMapping("/messages")
-    public ResponseEntity<?> PostMessage(com.talaria.portal.externalModel.Message message){
-        messages.add(new Message(message));
-        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    public ResponseEntity<?> PostMessage(@RequestBody com.talaria.portal.externalModel.Message message) {
+        var newMessage = new Message(message);
+        messages.add(newMessage);
+        return new ResponseEntity<>(newMessage, HttpStatus.ACCEPTED);
     }
 
 }

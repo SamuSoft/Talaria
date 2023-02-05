@@ -1,9 +1,9 @@
 package com.talaria.portal.endpoints;
 
 import com.talaria.portal.model.User;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +18,25 @@ public class UserEndpoints {
     @GetMapping("/users")
     public List<User> getAllUsers(){
         return users;
+    }
+
+    @GetMapping("/users/{uuid}")
+    public ResponseEntity<User> getUser(@PathVariable UUID uuid){
+        var user = users.stream().filter(u -> u.uuid().equals(uuid)).findFirst();
+        if (user.isPresent()){
+            return new ResponseEntity<>(user.get(), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @DeleteMapping("/users/{uuid}")
+    public ResponseEntity<User> deleteUser(@PathVariable UUID uuid){
+        var user = users.stream().filter(u -> u.uuid().equals(uuid)).findFirst();
+        if (user.isPresent()){
+            users.remove(user.get());
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @PostMapping("/users")
