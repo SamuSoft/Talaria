@@ -1,0 +1,34 @@
+portal/HELP.md
+portal/target/
+portal/.mvn
+portal/mvn/wrapper/maven-wrapper.jar
+portal/!**/src/main/**/target/
+portal/!**/src/test/**/target/
+
+### STS ###
+portal/.apt_generated
+portal/.classpath
+portal/.factorypath
+portal/.project
+portal/.settings
+portal/.springBeans
+portal/.sts4-cache
+
+### IntelliJ IDEA ###
+portal/.idea
+portal/*.iws
+portal/*.iml
+portal/*.ipr
+
+### NetBeans ###
+portal/nbproject/private/
+portal/nbbuild/
+portal/dist/
+portal/nbdist/
+portal/.nb-gradle/
+portal/build/
+portal/!**/src/main/**/build/
+portal/!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
