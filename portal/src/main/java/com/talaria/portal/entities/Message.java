@@ -13,7 +13,7 @@ public class Message {
 
     @Id
     public UUID uuid;
-    public Timestamp sent;
+    public long sent;
     public boolean received;
     public String receiverMedium;
     public String senderMedium;
@@ -21,7 +21,7 @@ public class Message {
 
     public Message() {}
     public Message(UUID uuid,
-                   Timestamp sent,
+                   long sent,
                    boolean received,
                    String receiverMedium,
                    String senderMedium,
@@ -34,13 +34,9 @@ public class Message {
         this.message = message;
     }
 
-    public Message(String receiverMedium, String senderMedium, String message) {
-        this(UUID.randomUUID(), Timestamp.from(Instant.now()), false, receiverMedium, senderMedium, message);
-    }
-
     public Message(com.talaria.portal.dto.Message message) {
         this(UUID.randomUUID(),
-                Timestamp.from(Instant.now()),
+                Instant.now().getEpochSecond(),
                 false,
                 message.receiverMedium(),
                 message.senderMedium(),

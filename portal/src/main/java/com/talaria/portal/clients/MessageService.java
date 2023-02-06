@@ -35,8 +35,8 @@ public class MessageService {
                         "(m.sent >= :from OR m.sent <= :until)", Message.class);
 
         return query.setParameter("receiver", receiver)
-                .setParameter("from", from)
-                .setParameter("until", until)
+                .setParameter("from", from.getTime())
+                .setParameter("until", until.getTime())
                 .getResultList();
     }
 

@@ -17,7 +17,7 @@ func Setup() <-chan amqp.Delivery {
 	defer ch.Close()
 
 	q, err := ch.QueueDeclare(
-		"Talaria", // name
+		"talaria", // name
 		false,     // durable
 		false,     // delete when unused
 		false,     // exclusive
@@ -62,6 +62,7 @@ func HandleMessage(receivedMessage []byte) {
 	if err != nil {
 		return // If the unmarshalling fails, we want the goroutine to fail over as well, since the message was bad
 	}
+	log.Print("Received message: ", string(receivedMessage))
 	insertMessage(message)
 }
 

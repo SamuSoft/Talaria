@@ -83,7 +83,7 @@ public class MessageEndpoints {
         } catch (IOException ex) {
             return new ResponseEntity<>(HttpStatus.I_AM_A_TEAPOT);
         }
-        messageService.addMessage(newMessage);
+//        messageService.addMessage(newMessage);
         return new ResponseEntity<>(newMessage, HttpStatus.ACCEPTED);
     }
 

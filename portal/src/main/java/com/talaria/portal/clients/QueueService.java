@@ -13,28 +13,24 @@ import java.util.concurrent.TimeoutException;
 @Service("queueService")
 public class QueueService {
     private final static String QUEUE_NAME = "Talaria";
-    private Connection connection;
-    private Channel channel;
+    private ConnectionFactory factory;
 
     public QueueService() {
-        ConnectionFactory factory = new ConnectionFactory();
+        factory = new ConnectionFactory();
         factory.setHost("localhost");
-        try {
-            connection = factory.newConnection();
-            channel = connection.createChannel();
-            channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-        } catch (IOException | TimeoutException ex) {
-            System.err.println("Failed to connect to RabbitMQ");
-        }
     }
 
     public void send(Message message) throws IOException {
-        generalSend(message);
+        var mapper = new ObjectMapper().writer();
+        String json = mapper.writeValueAsString(message);
+        System.out.println(json);
+        try (var connection = factory.newConnection();
+             var channel = connection.createChannel()) {
+            channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+            channel.basicPublish("", QUEUE_NAME, null, json.getBytes());
+        } catch (TimeoutException ex) {
+        }
+        System.out.println("Message published: " + message.uuid);
     }
 
-    private void generalSend(Object object) throws IOException {
-        var mapper = new ObjectMapper().writer();
-        String json = mapper.writeValueAsString(object);
-        channel.basicPublish("", QUEUE_NAME, null, json.getBytes());
-    }
 }

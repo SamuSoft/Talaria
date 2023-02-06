@@ -5,7 +5,6 @@ import (
 	"fmt"
 	_ "github.com/lib/pq"
 	"log"
-	"time"
 )
 
 const (
@@ -17,15 +16,13 @@ const (
 )
 
 type Message struct {
-	Uuid           string
-	Sent           time.Time
-	Received       bool
-	ReceiverMedium string
-	SenderMedium   string
-	Message        string
+	Uuid           string `json:"uuid"`
+	Sent           int32  `json:"sent"`
+	Received       bool   `json:"received"`
+	ReceiverMedium string `json:"receiverMedium"`
+	SenderMedium   string `json:"senderMedium"`
+	Message        string `json:"message"`
 }
-
-var db *sql.DB
 
 func failOnError(err error, msg string) {
 	if err != nil {
@@ -39,7 +36,7 @@ func logOnError(err error, msg string) {
 	}
 }
 
-func Setup() {
+func Setup() *sql.DB {
 	// connection string
 	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 
@@ -50,14 +47,16 @@ func Setup() {
 	// check db connection is live
 	err = db.Ping()
 	failOnError(err, "Failed to check coon")
+	return db
 }
 
-func Close() {
+func Close(db *sql.DB) {
 	// close database, ignore errors
 	defer db.Close()
 }
 
 func InsertMessage(message Message) {
+	var db = Setup()
 	insertStmt := `insert into "message"("uuid", 
                       "message", 
                       "received", 
@@ -71,5 +70,6 @@ func InsertMessage(message Message) {
 		message.ReceiverMedium,
 		message.SenderMedium,
 		message.Sent)
+	Close(db)
 	logOnError(e, "Failed to insert message into DB")
 }
