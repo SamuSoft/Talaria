@@ -25,4 +25,16 @@ Available endpoints and HTTP methods are:
 
 `DELETE messages/{id}`
 
+`POST messages`
+
+Request-bodies should look like: 
+```
+{
+    "receiverMedium": "hello",
+    "senderMedium": "world",
+    "message": "Hello, World"
+}
+```
+
+Where ReceiverMedium stands for the user who receives the message, and senderMedium is the sender.
 
