@@ -4,6 +4,7 @@ import com.talaria.portal.entities.Message;
 import com.talaria.portal.repositories.MessageRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,7 @@ public class MessageService {
     @PersistenceContext
     private EntityManager entityManager;
 
+    @Transactional
     public Optional<Message> getMessageById(UUID id) {
         var query = entityManager.createQuery(
                 "SELECT m FROM Message m WHERE m.uuid = :id", Message.class);
@@ -29,6 +31,7 @@ public class MessageService {
                 .getResultList().stream().findFirst();
     }
 
+    @Transactional
     public List<Message> getMessagesByDate(String receiver, Timestamp from, Timestamp until) {
         var query = entityManager.createQuery(
                 "SELECT m FROM Message m WHERE m.receiverMedium = :receiver AND " +
@@ -40,6 +43,7 @@ public class MessageService {
                 .getResultList();
     }
 
+    @Transactional
     public List<Message> getUnreadMessages(String receiver) {
         // This whole thing should really just be one single DB Transaction
         var query = entityManager.createQuery(
@@ -52,17 +56,17 @@ public class MessageService {
         for (var m : Messages) {
             // Looping over all messages, but as said above, should be something else
             entityManager.createQuery("UPDATE Message m SET m.received = true WHERE m.uuid = :id")
-                    .setParameter("id", m.uuid);
+                    .setParameter("id", m.uuid).executeUpdate();
         }
         return Messages;
     }
 
+    @Transactional
     public void deleteMessage(UUID id) {
         var query = entityManager.createQuery(
-                "DELETE FROM Message m WHERE m.uuid = :id", Message.class);
+                "DELETE FROM Message WHERE uuid = :id");
 
-        query.setParameter("id", id)
-                .getResultList();
+        query.setParameter("id", id).executeUpdate();
     }
 
     public void addMessage(Message message) {
