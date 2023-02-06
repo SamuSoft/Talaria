@@ -1,4 +1,4 @@
-package com.talaria.portal.externalModel;
+package com.talaria.portal.dto;
 
 public record Message(String receiverMedium,
                       String senderMedium,
