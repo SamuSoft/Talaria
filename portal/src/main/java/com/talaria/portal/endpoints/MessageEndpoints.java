@@ -63,8 +63,8 @@ public class MessageEndpoints {
     @GetMapping("/messages/{uuid}")
     public ResponseEntity<Message> getMessage(@PathVariable UUID uuid) {
         var message = messageService.getMessageById(uuid);
-        if (message != null)
-            return new ResponseEntity<>(message, HttpStatus.OK);
+        if (message.isPresent())
+            return new ResponseEntity<>(message.get(), HttpStatus.OK);
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
