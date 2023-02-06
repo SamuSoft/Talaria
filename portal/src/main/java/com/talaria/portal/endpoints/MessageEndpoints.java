@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -19,18 +21,43 @@ public class MessageEndpoints {
 
     List<Message> messages = new ArrayList<>();
 
+    private Timestamp parseDate(String date) {
+        var nDate = date;
+        if (date.contains("+"))
+            nDate = date.substring(0, date.indexOf('+'));
+        return Timestamp.valueOf(nDate.replace('T', ' '));
+    }
+
     @Resource(name = "queueService")
     private QueueService queueService = new QueueService();
     @Resource(name = "messageService")
     private MessageService messageService = new MessageService();
 
     @GetMapping("/messages")
-    public List<Message> getAllMessagesSentBetween(Timestamp from, Timestamp until) {
-        return messages.stream()
-                .filter(message ->
-                        (from != null && message.sent.after(from)) ^
-                                (until != null && message.sent.before(until)))
-                .toList();
+    public List<Message> getAllMessagesSentBetween(String user, String from, String until) {
+        //Doing a lot of string magic because Timestamp cannot be parsed again from its string format
+        Timestamp fromT = null;
+        Timestamp untilT = null;
+
+        // If from time isn't set, only retrieve 1 day back
+        if (from == null)
+            fromT = Timestamp.from(Instant.now().minus(1, ChronoUnit.DAYS));
+        else
+            fromT = parseDate(from);
+
+        // If until time isn't set, set to now
+        if (until == null)
+            untilT = Timestamp.from(Instant.now());
+        else
+            untilT = parseDate(until);
+
+
+        return messageService.getMessagesByDate(user, fromT, untilT);
+    }
+
+    @GetMapping("/messages/unread")
+    public List<Message> getUnreadMessages(String user) {
+        return messageService.getUnreadMessages(user);
     }
 
     @GetMapping("/messages/{uuid}")
@@ -43,14 +70,8 @@ public class MessageEndpoints {
 
     @DeleteMapping("/messages/{uuid}")
     public ResponseEntity<Message> deleteMessage(@PathVariable UUID uuid) {
-        var maybeMessage = messages.stream()
-                .filter(message -> message.uuid.equals(uuid))
-                .findFirst();
-        if (maybeMessage.isPresent()) {
-            messages.remove(maybeMessage.get());
-            return new ResponseEntity<>(HttpStatus.ACCEPTED);
-        }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        messageService.deleteMessage(uuid);
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
 
